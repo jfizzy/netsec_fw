@@ -51,8 +51,11 @@ class RuleParser:
         ip = ruleParts[2]
         ports = ruleParts[3]
         flag = ruleParts[4] if len(ruleParts) == 5 else None
-        
-        rule = Rule(direction, action, ip, ports, flag)
+
+        try:
+            rule = Rule(direction, action, ip, ports, flag)
+        except:
+            rule = None
         
         return rule
         
@@ -103,20 +106,17 @@ class Rule:
                 self._ip_mask_str = self.longToIp(self._ip_mask_val)
             except ValueError:
                 #poorly formed subnet mask
-                print("uh oh")
-                print(traceback.format_exc())
-                return None
+                raise RuleException("Malformed subnet mask")
             except:
                 #poorly formed ip
-                print("Oh noes")
-                print(traceback.format_exc())
-                return None
+                raise RuleException("Malformed ip address")
+
         else:
-            return None    
+            raise RuleException("Malformed ip adress. Contained multiple subnet masks.")
         
         self._ports = ports.split(",")
         self._flag = flag
-
+        
     def ipToLong(self, ip):
         """ takes in a string format ip and converts it to a long int """
         packedIP = socket.inet_aton(ip)
