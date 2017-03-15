@@ -7,7 +7,7 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-class RuleParser:
+class RuleManager:
     def __init__(self):
         """ """
         self._rules = []
@@ -58,14 +58,18 @@ class RuleParser:
             rule = None
         
         return rule
-        
-        
-    def checkPacket(self, packet):
-        """ 
-        checks to see if a packet conforms to any rules and returns the rule number.
-        returns -1 if no rule found
-        """
-        return -1
+
+    @staticmethod
+    def ipToLong(ip):
+        """ takes in a string format ip and converts it to a long int """
+        packedIP = socket.inet_aton(ip)
+        return struct.unpack("!L", packedIP)[0]
+
+    @staticmethod
+    def longToIp(longIp):
+        """ takes in a long format ip and converts it to a string """
+        stringIp = socket.inet_ntoa(struct.pack("!L", longIp))
+        return stringIp
         
 
 class Rule:
@@ -96,14 +100,14 @@ class Rule:
             real_ip = ip_parts[0]
             try:
                 subnet_mask_raw = int(subnet_mask)
-                ipLong = self.ipToLong(real_ip)
+                ipLong = RuleManager.ipToLong(real_ip)
 
                 subnet_mask = 1 << (subnet_mask_raw - 1)
                 subnet_mask = subnet_mask | (subnet_mask - 1)
                 subnet_mask = subnet_mask << (32 - subnet_mask_raw)
 
                 self._ip_mask_val = subnet_mask & ipLong
-                self._ip_mask_str = self.longToIp(self._ip_mask_val)
+                self._ip_mask_str = RuleManager.longToIp(self._ip_mask_val)
             except ValueError:
                 #poorly formed subnet mask
                 raise RuleException("Malformed subnet mask")
@@ -116,16 +120,6 @@ class Rule:
         
         self._ports = ports.split(",")
         self._flag = flag
-        
-    def ipToLong(self, ip):
-        """ takes in a string format ip and converts it to a long int """
-        packedIP = socket.inet_aton(ip)
-        return struct.unpack("!L", packedIP)[0]
-
-    def longToIp(self, longIp):
-        """ takes in a long format ip and converts it to a string """
-        stringIp = socket.inet_ntoa(struct.pack("!L", longIp))
-        return stringIp
         
     def __str__(self):
         my_str = "direction: " + self._direction + "\n"
@@ -146,7 +140,71 @@ class RuleException(Exception):
     def __str__(self):
         return repr(self._message)
 
+    
+def checkPacket(self, packet):
+    """ 
+    checks to see if a packet conforms to any rules and returns the rule number.
+    returns -1 if no rule found
+    """
+    
+    pcktParts = packet.split()
+    
+    # needs exactly 4 parts
+    if len(pcktParts) != 4:
+        return None
+    
+    direction = pcktParts[0]
+    ip = pcktParts[1]
+    port = pcktParts[2]
+    flag = pcktParts[3]
+    
+    try:
+        pckt = Packet(direction, ip, port, flag)
+        print("Made a packet!")
+    except:
+        return -1
+    
+    return pckt
 
+class Packet:
+    """  """
+    def __init__(self, direction, ip, port, flag):
+        self._direction = direction
+
+        if self._direction != 'in' and self._direction != 'out':
+            raise PacketException("Packet object field 'direction' must be either 'in' or 'out'")
+
+        try:
+            ipLong = RuleManager.ipToLong(ip)
+        except:
+            raise PacketException("Packet object field 'ip' must be a valid IPv4 address")
+        finally:
+            self._ip = ip
+
+        if port >=0 and port < 65536:
+            self._port = port
+        else:
+            raise PacketException("Packet object field 'port' must be between 0 and 65535")
+
+        if not (flag == 1 or flag == 0):
+            raise PacketException("Packet object field 'flag' must be either '0' or '1'")
+        self._flag = flag
+
+
+        def __str__(self):
+            my_str = "direction: " + self._direction + "\n"
+            my_str += "ip: " + self._raw_ip + "\n"
+            my_str += "port: " + str(self._port) + "\n"
+            my_str += "flag: " + self._flag + "\n"
+
+            return str(my_str)
+
+class PacketException(Exception):
+    def __init__(self, msg):
+        self._msg = msg
+
+    def __str__(self):
+        return repr(self._message)
 
 def main(args = None):
     if len(sys.argv) < 2:
@@ -155,16 +213,15 @@ def main(args = None):
         return
 
     rules = sys.argv[1]
-    rule_parser = RuleParser()
-    rule_parser.parseRules(rules)
+    rule_manager = RuleManager()
+    rule_manager.parseRules(rules)
+
+    #rule_manager.pckt
+    
     if sys.stdin.isatty():
         eprint("No input file received.")
         return
-
     
-
-    
-
 if __name__ == "__main__":
     main()
     eprint("Exitting...")
