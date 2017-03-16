@@ -8,4 +8,4 @@ out accept	137.159.0.0/8	*
 out deny	10.0.0.0/8	*
 out deny	*	22
 out accept	*	*
-fdajskldfja;llfdksjal;
+out accept	10.0.0.f	22

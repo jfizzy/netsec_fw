@@ -23,18 +23,17 @@ class RuleManager:
                 line = fd.readline()
                 
                 while line != '':
-                    rule = self.parseRule(line, lineNo)
-                    if rule != None:
-                        self._rules.append(rule)
-                    else:
-                        eprint("Error in line {0} of rule file '{1}' ignoring rule.".format(lineNo, filename))
+                    try:
+                        rule = self.parseRule(line, lineNo)
+                        if rule != None:
+                            self._rules.append(rule)
+                        else:
+                            eprint("Error in line {0} of rule file '{1}' ignoring rule:\n{2}".format(lineNo, filename, line), end='')
 
-                    line = fd.readline()
-                    lineNo = lineNo + 1
-
-
-            for rule in self._rules:
-                eprint(rule)
+                        line = fd.readline()
+                        lineNo = lineNo + 1
+                    except Exception as ex:
+                        eprint("Error in line {0} of rule file '{1}': {2} ignoring rule:\n{3}".format(lineNo, filename, ex, line), end='')
                 
         except:
             # error opening file
@@ -141,12 +140,14 @@ class Rule:
         
         ip_parts = ip.split("/")
         if len(ip_parts) == 1:
+            self._ip_mask_val = 0xFFFFFFFF
             self._ip_mask_str = ip_parts[0]
+            if ip_parts[0] != '*':
+                try:
+                    self._good_ip = IPHelper.ipToLong(ip_parts[0])
+                except:
+                    raise RuleException("Malformed ip address")
             
-            #accept any
-            if self._ip_mask_str == '*':
-                self._ip_mask_val = 0xFFFFFFFF
-
         elif len(ip_parts) == 2:
             subnet_mask = ip_parts[1]
             real_ip = ip_parts[0]
