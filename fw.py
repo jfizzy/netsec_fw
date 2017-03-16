@@ -61,6 +61,19 @@ class RuleManager:
         
         return rule
 
+    def parsePackets(self, fd):
+        line = fd.readline()
+        while line != '':
+            pckt = self.parsePacket(line)
+            if pckt is not None:
+                rule = self.routePacket(pckt)
+                if rule is None:
+                    print("drop() {0}".format(pckt.__str__()))
+                else:
+                    print("{0}({1}) {2}".format(rule._action, rule._line_no, pckt.__str__()))
+                
+            line = fd.readline()
+    
     def parsePacket(self, packet):
         """ 
         checks to see if a packet conforms to any rules and returns the rule number.
@@ -71,7 +84,7 @@ class RuleManager:
         
         # needs exactly 4 parts
         if len(pcktParts) != 4:
-            return None
+            raise PacketException("Packet malformed.")
         
         direction = pcktParts[0]
         ip = pcktParts[1]
@@ -80,18 +93,18 @@ class RuleManager:
 
         try:
             pckt = Packet(direction, ip, port, flag)
-        except:
-            eprint(traceback.format_exc())
+        except Exception as ex:
+            eprint("Corrupt Packet:{0} Ignoring packet:\n{1}".format(ex, packet.__str__()))
             return None
         
         return pckt
 
-    def routePacket(self, packet, rules):
+    def routePacket(self, packet):
         """
         decides on the route that the current rules dictate for the packet
         """
 
-        for rule in rules:
+        for rule in self._rules:
             # check rule mask vs packet ip
             ip = IPHelper.ipToLong(packet._ip)
 
@@ -204,12 +217,15 @@ class Packet:
         except:
             raise PacketException("Packet object field 'ip' must be a valid IPv4 address")
         self._ip = ip
-            
-        if int(port) >=0 and int(port) < 65536:
-            self._port = port
-        else:
-            raise PacketException("Packet object field 'port' must be between 0 and 65535")
 
+        try:
+            if int(port) >=0 and int(port) < 65536:
+                self._port = port
+            else:
+                raise PacketException("Packet object field 'port' must be between 0 and 65535")
+        except:
+            raise PacketException("Packet object field 'port' must be between 0 and 65535")
+            
         if not (flag == '1' or flag == '0'):
             raise PacketException("Packet object field 'flag' must be either '0' or '1'")
         self._flag = flag
@@ -224,7 +240,7 @@ class PacketException(Exception):
         self._msg = msg
 
     def __str__(self):
-        return repr(self._message)
+        return repr(self._msg)
 
 class IPHelper:
     @staticmethod
@@ -253,18 +269,8 @@ def main(args = None):
         eprint("No input file received.")
         return
 
-    line = sys.stdin.readline()
-    while line != '':
-        pckt = rule_manager.parsePacket(line)
-        if pckt is not None:
-            rule = rule_manager.routePacket(pckt, rule_manager._rules)
-            if rule is None:
-                print("drop() {0}".format(pckt.__str__()))
-            else:
-                print("{0}({1}) {2}".format(rule._action, rule._line_no, pckt.__str__()))
-        else:
-            eprint("Corrupt Packet")
-        line = sys.stdin.readline()
+    rule_manager.parsePackets(sys.stdin)
+
     
 if __name__ == "__main__":
     main()
