@@ -102,17 +102,10 @@ class RuleManager:
                         if p == packet._port or p == '*':
                             if rule._flag is None:
                                 #packet is non-established connection
-                                if rule._action == 'accept':
-                                    return (True, rule)
-                                elif rule._action == 'deny':
-                                    return (False, rule)
-                            #may not need to return rules
+                                return rule
                             elif rule._flag == 'established' and packet._flag == '1':
-                                #packet is established connection
-                                if rule._action == 'accept':
-                                    return (True, rule)
-                                elif rule._action == 'deny':
-                                    return (False, rule)
+                                #packet is established connection and flag has been set for established connection
+                                return rule
                             else:
                                 pass
                         else:
@@ -122,8 +115,13 @@ class RuleManager:
             else:
                 pass
 
-        return (False, None)
-        
+        return None
+    '''
+    Adding some functions to clean up the above code
+    '''
+    def ip_match(self, rule, ip):
+        return rule._raw_ip == '*' or (rule._ip_mask_val & ip == rule._good_ip)
+
 
 class Rule:
     """  """
@@ -264,7 +262,7 @@ def main(args = None):
     while line != '':
         pckt = rule_manager.parsePacket(line)
         if pckt is not None:
-            (status, rule) = rule_manager.routePacket(pckt, rule_manager._rules)
+            rule = rule_manager.routePacket(pckt, rule_manager._rules)
             if rule is None:
                 print("drop() {0}".format(pckt.__str__()))
             else:
