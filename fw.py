@@ -115,12 +115,6 @@ class RuleManager:
                 pass
 
         return None
-    '''
-    Adding some functions to clean up the above code
-    '''
-    def ip_match(self, rule, ip):
-        return rule._raw_ip == '*' or (rule._ip_mask_val & ip == rule._good_ip)
-
 
 class Rule:
     """  """
