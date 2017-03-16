@@ -19,15 +19,18 @@ class RuleManager:
             with open(filename) as fd:
                 #do stuff
 
+                lineNo = 1
                 line = fd.readline()
-                rule = self.parseRule(line)
                 
                 while line != '':
+                    rule = self.parseRule(line, lineNo)
                     if rule != None:
                         self._rules.append(rule)
+                    else:
+                        eprint("Error in line {0} of rule file '{1}' ignoring rule.".format(lineNo, filename))
 
                     line = fd.readline()
-                    rule = self.parseRule(line)
+                    lineNo = lineNo + 1
 
 
             for rule in self._rules:
@@ -38,7 +41,7 @@ class RuleManager:
             eprint("Error in parseRules: traceback info: {0}".format(traceback.format_exc()))
 
 
-    def parseRule(self, ruleTxt):
+    def parseRule(self, ruleTxt, lineNo):
         """ parses a single rule. Expects 1 line of text """
         ruleParts = ruleTxt.split()
 
@@ -53,7 +56,7 @@ class RuleManager:
         flag = ruleParts[4] if len(ruleParts) == 5 else None
 
         try:
-            rule = Rule(direction, action, ip, ports, flag)
+            rule = Rule(direction, action, ip, ports, flag, lineNo)
         except:
             rule = None
         
@@ -88,7 +91,7 @@ class RuleManager:
         """
         decides on the route that the current rules dictate for the packet
         """
-        rule_counter = 1
+
         for rule in rules:
             # check rule mask vs packet ip
             ip = IPHelper.ipToLong(packet._ip)
@@ -100,16 +103,16 @@ class RuleManager:
                             if rule._flag is None:
                                 #packet is non-established connection
                                 if rule._action == 'accept':
-                                    return (True, rule_counter, rule)
+                                    return (True, rule)
                                 elif rule._action == 'deny':
-                                    return (False, rule_counter, rule)
+                                    return (False, rule)
                             #may not need to return rules
                             elif rule._flag == 'established' and packet._flag == '1':
                                 #packet is established connection
                                 if rule._action == 'accept':
-                                    return (True, rule_counter, rule)
+                                    return (True, rule)
                                 elif rule._action == 'deny':
-                                    return (False, rule_counter, rule)
+                                    return (False, rule)
                             else:
                                 pass
                         else:
@@ -119,13 +122,12 @@ class RuleManager:
             else:
                 pass
 
-            rule_counter += 1
-        return (False, 0, None)
+        return (False, None)
         
 
 class Rule:
     """  """
-    def __init__(self, direction, action, ip, ports, flag):
+    def __init__(self, direction, action, ip, ports, flag, lineNo):
         self._direction = direction
 
         if self._direction != 'in' and self._direction != 'out':
@@ -137,6 +139,7 @@ class Rule:
             raise RuleException("Rule object field 'action' must be either 'accept', 'deny', or 'drop'")
 
         self._raw_ip = ip
+        self._line_no = lineNo
         
         ip_parts = ip.split("/")
         if len(ip_parts) == 1:
@@ -256,16 +259,16 @@ def main(args = None):
     if sys.stdin.isatty():
         eprint("No input file received.")
         return
-    
+
     line = sys.stdin.readline()
     while line != '':
         pckt = rule_manager.parsePacket(line)
         if pckt is not None:
-            (status, rno, rule) = rule_manager.routePacket(pckt, rule_manager._rules)
-            if rno == 0:
+            (status, rule) = rule_manager.routePacket(pckt, rule_manager._rules)
+            if rule is None:
                 print("drop() {0}".format(pckt.__str__()))
             else:
-                print("{0}({1}) {2}".format(rule._action, rno, pckt.__str__()))
+                print("{0}({1}) {2}".format(rule._action, rule._line_no, pckt.__str__()))
         else:
             eprint("Corrupt Packet")
         line = sys.stdin.readline()
