@@ -92,7 +92,8 @@ class RuleManager:
         for rule in rules:
             # check rule mask vs packet ip
             ip = IPHelper.ipToLong(packet._ip)
-            if rule._raw_ip == '*' or (rule._ip_mask_val & ip == rule._ip_mask_val):
+
+            if rule._raw_ip == '*' or (rule._ip_mask_val & ip == rule._good_ip):
                 if rule._direction == packet._direction:
                     for p in rule._ports:
                         if p == packet._port or p == '*':
@@ -140,7 +141,7 @@ class Rule:
         ip_parts = ip.split("/")
         if len(ip_parts) == 1:
             self._ip_mask_str = ip_parts[0]
-
+            
             #accept any
             if self._ip_mask_str == '*':
                 self._ip_mask_val = 0xFFFFFFFF
@@ -156,13 +157,17 @@ class Rule:
                 subnet_mask = subnet_mask | (subnet_mask - 1)
                 subnet_mask = subnet_mask << (32 - subnet_mask_raw)
 
-                self._ip_mask_val = subnet_mask & ipLong
-                self._ip_mask_str = IPHelper.longToIp(self._ip_mask_val)
+                self._ip_mask_val = subnet_mask;
+
+                self._good_ip = subnet_mask & ipLong
+                self._ip_mask_str = IPHelper.longToIp(self._good_ip)                
             except ValueError:
                 #poorly formed subnet mask
+                print(traceback.format_exc())
                 raise RuleException("Malformed subnet mask")
             except:
                 #poorly formed ip
+                print(traceback.format_exc())
                 raise RuleException("Malformed ip address")
 
         else:
