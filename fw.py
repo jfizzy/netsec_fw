@@ -21,7 +21,8 @@ class RuleManager:
                 lineNo = 1
             
                 for line in fd:
-                
+                    if '#' in line:
+                        line = line.split('#', 1)[0]
                     if line.strip() != '' and  not line.strip().startswith("#"):
                         try:
                             rule = self.parseRule(line, lineNo)
