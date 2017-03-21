@@ -22,7 +22,7 @@ class RuleManager:
                 lineNo = 1
                 line = fd.readline()
                 
-                while line != '':
+                while line != '' and  not line.strip().startswith("#"):
                     try:
                         rule = self.parseRule(line, lineNo)
                         if rule != None:
