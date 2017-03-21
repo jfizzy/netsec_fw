@@ -17,24 +17,22 @@ class RuleManager:
 
         try:
             with open(filename) as fd:
-                #do stuff
 
                 lineNo = 1
-                line = fd.readline()
+            
+                for line in fd:
                 
-                while line != '' and  not line.strip().startswith("#"):
-                    try:
-                        rule = self.parseRule(line, lineNo)
-                        if rule != None:
-                            self._rules.append(rule)
-                        else:
-                            eprint("Error in line {0} of rule file '{1}' ignoring rule:\n{2}".format(lineNo, filename, line), end='')
-
-                        line = fd.readline()
-                        lineNo = lineNo + 1
-                    except Exception as ex:
-                        eprint("Error in line {0} of rule file '{1}': {2} ignoring rule:\n{3}".format(lineNo, filename, ex, line), end='')
+                    if line.strip() != '' and  not line.strip().startswith("#"):
+                        try:
+                            rule = self.parseRule(line, lineNo)
+                            if rule != None:
+                                self._rules.append(rule)
+                            else:
+                                eprint("Error in line {0} of rule file '{1}' ignoring rule:\n{2}".format(lineNo, filename, line), end='')
                 
+                        except Exception as ex:
+                            eprint("Error in line {0} of rule file '{1}': {2} ignoring rule:\n{3}".format(lineNo, filename, ex, line), end='')
+                    lineNo = lineNo + 1
         except:
             # error opening file
             eprint("Error in parseRules: traceback info: {0}".format(traceback.format_exc()))

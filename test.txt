@@ -3,13 +3,12 @@ in  accept	136.159.5.5/16	80,8080
 in  accept	*		443
 in  accept	10.0.0.0/31	*
 in  deny	*		21
-
-# This is a comment Line
-		# So is This
-
 in  accept	*	*	established
 out accept	137.159.0.0/8	*
 out deny	10.0.0.0/8	*
 out deny	*	22
 out accept	*	*
 out accept	10.0.0.f	22
+
+#This is a comment Line
+		# So it This
