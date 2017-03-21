@@ -5,6 +5,10 @@ in  accept	10.0.0.0/31	*
 in  deny	*		21
 in  accept	*	*	established
 out accept	137.159.0.0/8	* #Here is an inline comment
+
+
+# These are some extra lines
+
 out deny	10.0.0.0/8	*
 out deny	*	22
 out accept	*	*

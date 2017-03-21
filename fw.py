@@ -23,16 +23,16 @@ class RuleManager:
                 for line in fd:
                     if '#' in line:
                         line = line.split('#', 1)[0]
-                    if line.strip() != '' and  not line.strip().startswith("#"):
+                    if line.strip() != '':
                         try:
                             rule = self.parseRule(line, lineNo)
                             if rule != None:
                                 self._rules.append(rule)
                             else:
-                                eprint("Error in line {0} of rule file '{1}' ignoring rule:\n{2}".format(lineNo, filename, line), end='')
+                                eprint("Error in line {0} of rule file '{1}' ignoring rule:\n{2}\n".format(lineNo, filename, line), end='')
                 
                         except Exception as ex:
-                            eprint("Error in line {0} of rule file '{1}': {2} ignoring rule:\n{3}".format(lineNo, filename, ex, line), end='')
+                            eprint("Error in line {0} of rule file '{1}': {2} ignoring rule:\n{3}\n".format(lineNo, filename, ex, line), end='')
                     lineNo = lineNo + 1
         except:
             # error opening file
