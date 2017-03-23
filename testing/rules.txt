@@ -1,0 +1,40 @@
+in	deny	51.114.246.136/21	31225
+out	accept	243.30.137.160/14	41519	established
+in	deny	180.224.164.179/29	16218,56824	established
+out	accept	188.92.108.165/18	34562	established
+in	accept	211.196.230.204/8	57243	established
+out	deny	66.68.57.248/22	35451
+in	accept	54.104.172.241/14	47513	established
+in	deny	245.186.179.249/30	36622,10723,23410	established
+out	accept	251.8.20.57/12	*
+in	deny	251.200.46.81/15	*
+out	deny	182.243.21.212/31	*	established
+out	accept	243.178.134.184/27	*	established
+out	deny	130.222.90.204/31	13928,53586,7089
+in	accept	55.222.112.219/25	56686	established
+out	deny	12.84.85.128/22	*	established
+out	accept	26.103.77.54/28	*
+in	deny	105.65.125.232/26	8457,28637	established
+out	deny	8.165.45.193/18	46974	established
+in	accept	85.242.222.242/22	21609	established
+in	accept	17.87.118.3/15	*	established
+in	deny	153.79.233.83/25	*	established
+in	accept	*	40389	established
+in	deny	10.113.195.76/20	*
+out	accept	247.114.75.36/25	62537,34469,20470
+out	deny	125.73.238.50/23	42624	established
+out	accept	125.228.109.28/13	*
+in	accept	134.51.0.49/21	57160,50641,61817	established
+in	deny	101.36.48.223/11	21495
+in	deny	129.60.176.159/30	38592,40886,40209
+out	accept	134.19.181.84/12	47595
+out	accept	106.99.207.72/30	29620,15929	established
+in	accept	59.114.229.208/14	*
+out	accept	234.15.57.69/19	45396,37916,1695	established
+out	accept	*	*	established
+out	deny	180.47.133.9/32	10221,29234,4095	established
+out	accept	253.62.72.122/11	*
+in	accept	169.31.250.76/32	31640
+out	deny	23.11.223.195/23	11905,46503	established
+out	deny	193.77.188.241/24	*	established
+in	accept	150.61.17.249/30	50475
