@@ -24,7 +24,7 @@ The program only contains one file with executable code - 'fw.py'
 
 To run it:
 
-	python3 fw.py <rule file> < <packet file>
+	python3 fw.py [rule file] < [packet file]
 
 where the contents of the rule file are arguments to the program,
 and the packet file is piped into std input from the command line.
